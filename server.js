@@ -57,7 +57,7 @@ async function api(req,res,u){
   broadcast(g);return write(res,200,{pin:g.pin,token:p.token,name:p.name});
  }
  if(req.method==='POST'&&route==='/api/start'){const b=await body(req),g=gameFor(b.pin);auth(g,'host',b.token);
-  if(g.phase!=='lobby')throw bad('Ойын басталып кеткен',409);if(!g.players.size)throw bad('Кемінде бір қатысушы қосылсын',409);
+  if(g.phase!=='lobby')throw bad('Ойын басталып кеткен',409);if(!g.players.size&&b.demo!==true)throw bad('Ойынды бастау үшін алдымен бір қатысушы кірсін. Немесе тест режимін қолданыңыз.',409);
   g.index=0;newQuestion(g);return write(res,200,{ok:true});}
  if(req.method==='POST'&&route==='/api/answer'){
   const b=await body(req),g=gameFor(b.pin),p=auth(g,'player',b.token).player;
