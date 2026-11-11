@@ -47,8 +47,8 @@ function connect(){
  events=new EventSource(url);events.onmessage=e=>{try{view=JSON.parse(e.data);render();}catch{}};
  events.onerror=()=>{if(!view)refresh();};refresh();
 }
-async function refresh(){if(!session)return;try{const u='/api/state?'+new URLSearchParams({pin:session.pin,role,token:session.token});const r=await fetch(u),j=await r.json();if(!r.ok)throw Error(j.error);view=j;render();}catch(e){toast(e.message||'Байланыс үзілді');}}
-async function command(name,extra={}){try{await request(name,Object.assign({pin:session.pin,token:session.token},extra));}catch(e){toast(e.message);}}
+async function refresh(){if(!session)return;try{const u='/api/state?'+new URLSearchParams({pin:session.pin,role,token:session.token});const r=await fetch(u),j=await r.json();if(!r.ok)throw Error(j.error);view=j;render();}catch(e){if(/PIN табылмады|Рұқсат жоқ/.test(e.message||'')){reset();toast('Алдыңғы ойын бөлмесі жабылған. Жаңа ойын құрыңыз немесе PIN енгізіңіз.');return;}toast(e.message||'Байланыс үзілді');}}
+async function command(name,extra={}){try{await request(name,Object.assign({pin:session.pin,token:session.token},extra));}catch(e){if(/PIN табылмады|Рұқсат жоқ/.test(e.message||'')){reset();toast('Алдыңғы ойын бөлмесі жабылған. Жаңа ойын құрыңыз немесе PIN енгізіңіз.');return;}toast(e.message);}}
 function shareLink(){const link=roomUrl||location.origin+'/?pin='+session.pin;if(navigator.clipboard?.writeText)navigator.clipboard.writeText(link).then(()=>toast('Сілтеме көшірілді!')).catch(()=>toast(link));else toast(link);}
 function playerNames(){return (view.players||[]).map(p=>'<span class="name"><span class="avatar">'+esc(p.name.slice(0,1).toUpperCase())+'</span>'+esc(p.name)+'</span>').join('');}
 function startButton(){
