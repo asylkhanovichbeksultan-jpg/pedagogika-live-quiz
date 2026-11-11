@@ -28,7 +28,12 @@ try{session=JSON.parse(sessionStorage.getItem('quiz-'+role)||'null');}catch{}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tag=(s,extra='')=>'<span class="step"><span>'+esc(s)+'</span>'+extra+'</span>';
 const score=x=>Number(x||0).toLocaleString('kk-KZ');
-const action=(txt,fn,cl='')=>'<button class="btn '+cl+'" onclick="'+fn+'">'+txt+'</button>';
+const action=(txt,fn,cl='')=>{
+ const route=fn.match(/^command\(&quot;([a-z]+)&quot;/);
+ const name=route?route[1]:fn.replace(/\(\)$/,'');
+ const demo=fn.includes('demo:true')?' data-demo="true"':'';
+ return '<button type="button" class="btn '+cl+'" data-quiz-action="'+name+'"'+demo+'>'+txt+'</button>';
+};
 function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>e.style.display='none',3200);}
 async function request(route,data){const r=await fetch('/api/'+route,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data||{})});const j=await r.json();if(!r.ok)throw Error(j.error||'Қате');return j;}
 function remember(s){session=s;sessionStorage.setItem('quiz-'+role,JSON.stringify(s));}
@@ -48,7 +53,38 @@ function connect(){
  events.onerror=()=>{if(!view)refresh();};refresh();
 }
 async function refresh(){if(!session)return;try{const u='/api/state?'+new URLSearchParams({pin:session.pin,role,token:session.token});const r=await fetch(u),j=await r.json();if(!r.ok)throw Error(j.error);view=j;render();}catch(e){if(/PIN табылмады|Рұқсат жоқ/.test(e.message||'')){reset();toast('Алдыңғы ойын бөлмесі жабылған. Жаңа ойын құрыңыз немесе PIN енгізіңіз.');return;}toast(e.message||'Байланыс үзілді');}}
-async function command(name,extra={}){try{await request(name,Object.assign({pin:session.pin,token:session.token},extra));}catch(e){if(/PIN табылмады|Рұқсат жоқ/.test(e.message||'')){reset();toast('Алдыңғы ойын бөлмесі жабылған. Жаңа ойын құрыңыз немесе PIN енгізіңіз.');return;}toast(e.message);}}
+async function command(name,extra={}){
+ const isStart=name==='start';if(isStart)showStatus('Ойын басталуда…',false);
+ try{
+  await request(name,Object.assign({pin:session.pin,token:session.token},extra));
+  await refresh();
+  if(isStart)showStatus('Ойын басталды!',false);
+ }catch(e){
+  if(/PIN табылмады|Рұқсат жоқ/.test(e.message||'')){reset();toast('Алдыңғы ойын бөлмесі жабылған. Жаңа ойын құрыңыз немесе PIN енгізіңіз.');return;}
+  showStatus('⚠ '+e.message,true);toast(e.message);
+ }
+}
+function showStatus(message,isError){
+ let box=document.getElementById('quiz-status');
+ if(!box){box=document.createElement('div');box.id='quiz-status';box.style.cssText='position:fixed;left:16px;right:16px;bottom:16px;z-index:99;max-width:650px;margin:auto;border-radius:14px;padding:15px 20px;font-weight:800;box-shadow:0 10px 40px #0009';document.body.appendChild(box);}
+ box.textContent=message;box.style.background=isError?'#ffe2e7':'#ddfff0';box.style.color=isError?'#7c1837':'#114c39';box.style.display='block';
+ if(!isError)setTimeout(()=>{if(box.textContent===message)box.style.display='none';},3500);
+}
+document.addEventListener('click',function(e){
+ const el=e.target.closest('[data-quiz-action],[data-quiz-answer]');
+ if(!el||el.disabled)return;
+ if(el.hasAttribute('data-quiz-answer')){el.disabled=true;answer(Number(el.dataset.quizAnswer));return;}
+ const name=el.dataset.quizAction;
+ if(name==='create')return void create();
+ if(name==='join')return void join();
+ if(name==='shareLink')return void shareLink();
+ if(['start','next','restart'].includes(name)){
+  if(el.dataset.busy==='1')return;
+  el.dataset.busy='1';el.disabled=true;
+  const demo=el.dataset.demo==='true';
+  Promise.resolve(command(name,demo?{demo:true}:{})).finally(()=>{el.dataset.busy='0';el.disabled=false;});
+ }
+});
 function shareLink(){const link=roomUrl||location.origin+'/?pin='+session.pin;if(navigator.clipboard?.writeText)navigator.clipboard.writeText(link).then(()=>toast('Сілтеме көшірілді!')).catch(()=>toast(link));else toast(link);}
 function playerNames(){return (view.players||[]).map(p=>'<span class="name"><span class="avatar">'+esc(p.name.slice(0,1).toUpperCase())+'</span>'+esc(p.name)+'</span>').join('');}
 function startButton(){
@@ -68,7 +104,7 @@ function timerMarkup(q){const sec=Math.max(0,Math.ceil((q.endsAt-Date.now())/100
 function answers(q,reveal=false){
  const symbols=['◆','●','▲','■'],cls=['a0','a1','a2','a3'];
  return '<div class="answers">'+q.options.map((t,i)=>{const chosen=view.personal?.answer===i,correct=reveal&&view.stats?.correct===i,wrong=reveal&&!correct;
- return '<button class="answer '+cls[i]+(chosen?' selected':'')+(correct?' correct':'')+(wrong?' wrong':'')+'" '+(role==='host'||reveal||view.personal?.answer!==null&&view.personal?.answer!==undefined?'disabled':'onclick="answer('+i+')"')+'><span class="symbol">'+symbols[i]+'</span><span>'+esc(t)+(correct?' ✓':'')+'</span></button>';}).join('')+'</div>';
+ return '<button class="answer '+cls[i]+(chosen?' selected':'')+(correct?' correct':'')+(wrong?' wrong':'')+'" '+(role==='host'||reveal||view.personal?.answer!==null&&view.personal?.answer!==undefined?'disabled':'data-quiz-answer="'+i+'"')+'><span class="symbol">'+symbols[i]+'</span><span>'+esc(t)+(correct?' ✓':'')+'</span></button>';}).join('')+'</div>';
 }
 async function answer(choice){await command('answer',{choice});}
 function leaderboard(){return (view.leaders||[]).map((p,i)=>'<div class="leader"><span class="rank">#'+p.rank+'</span><strong>'+esc(p.name)+'</strong><b>'+score(p.score)+' P</b></div>').join('')||'<p>Әзірге ұпай жоқ</p>';}
