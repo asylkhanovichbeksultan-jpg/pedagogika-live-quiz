@@ -1,0 +1,27 @@
+name: Verify quiz
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check server and browser JavaScript syntax
+        run: |
+          node --check server.js
+          node --check questions.js
+          node - <<'JS'
+          const fs=require('fs'),vm=require('vm');
+          const html=fs.readFileSync('public/index.html','utf8');
+          const script=html.match(/<script>([\s\S]*?)<\/script>/);
+          if(!script) throw Error('Client JS not found');
+          new vm.Script(script[1],{filename:'public/index.html'});
+          console.log('Client syntax OK');
+          JS
+      - name: Run multiplayer tests
+        run: npm test
