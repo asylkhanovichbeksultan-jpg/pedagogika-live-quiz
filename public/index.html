@@ -51,6 +51,10 @@ async function refresh(){if(!session)return;try{const u='/api/state?'+new URLSea
 async function command(name,extra={}){try{await request(name,Object.assign({pin:session.pin,token:session.token},extra));}catch(e){toast(e.message);}}
 function shareLink(){const link=roomUrl||location.origin+'/?pin='+session.pin;if(navigator.clipboard?.writeText)navigator.clipboard.writeText(link).then(()=>toast('Сілтеме көшірілді!')).catch(()=>toast(link));else toast(link);}
 function playerNames(){return (view.players||[]).map(p=>'<span class="name"><span class="avatar">'+esc(p.name.slice(0,1).toUpperCase())+'</span>'+esc(p.name)+'</span>').join('');}
+function startButton(){
+ if(view.participantCount>0) return startButton();
+ return '<div class="notice"><strong>Алдымен қатысушылар қосылсын</strong><p style="margin:7px 0 0">QR кодты басқа телефонмен сканерлеңіз немесе ойын сілтемесін жіберіңіз. Қатысушы саны 1 болғанда «Ойынды бастау» шығады.</p></div>'+action('🧪 ӨЗІМ ТЕКСЕРІП КӨРЕМІН','command(&quot;start&quot;,{demo:true})','secondary block');
+}
 function lobby(){
  if(role==='host'){
  const link=location.origin+'/?pin='+view.pin,qr='https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=10&data='+encodeURIComponent(link);
