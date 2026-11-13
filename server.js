@@ -1,6 +1,8 @@
 'use strict';
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),os=require('node:os');
-const {questions,pointsByLevel}=require('./questions');
+const {questions:pedagogikaQuestions,pointsByLevel}=require('./questions');
+const {questions:minezQuestions}=require('./minez-questions');
+const banks={minez:{title:'Көркем мінез — жүректің сұлулығы',questions:minezQuestions},pedagogika:{title:'Оқытудағы диагностика және бақылау',questions:pedagogikaQuestions}};
 const games=new Map(),MAX_PLAYERS=150,PORT=Number(process.env.PORT||3000);
 const id=()=>crypto.randomBytes(18).toString('hex');
 const bad=(message,status=400)=>Object.assign(new Error(message),{status});
@@ -11,8 +13,8 @@ function playerFor(g,token){return [...g.players.values()].find(p=>p.token===tok
 function auth(g,role,token){if(role==='host'&&token===g.hostToken)return {role,player:null};if(role==='player'){const p=playerFor(g,token);if(p)return {role,player:p};}throw bad('Рұқсат жоқ. Қайта қосылыңыз.',403);}
 const rank=g=>[...g.players.values()].sort((a,b)=>b.score-a.score||b.correctCount-a.correctCount||a.joinedAt-b.joinedAt).map((p,i)=>({id:p.id,name:p.name,score:p.score,correctCount:p.correctCount,rank:i+1}));
 function state(g,a){
- const q=questions[g.index],leaders=rank(g),p=a.player,ans=p&&g.answers.get(p.id);
- return {pin:g.pin,phase:g.phase,questionIndex:g.index,total:questions.length,counts:{easy:10,medium:3,hard:2},
+ const q=g.questions[g.index],leaders=rank(g),p=a.player,ans=p&&g.answers.get(p.id);
+ return {pin:g.pin,topic:g.topic,title:g.title,phase:g.phase,questionIndex:g.index,total:g.questions.length,counts:{easy:10,medium:3,hard:2},
  question:['question','reveal'].includes(g.phase)?{text:q.question,options:q.options,level:q.level,duration:q.time,endsAt:g.endsAt,number:g.index+1}:null,
  stats:g.phase==='reveal'?{counts:q.options.map((_,i)=>[...g.answers.values()].filter(x=>x.choice===i).length),correct:q.correct,source:q.source}:null,
  players:a.role==='host'?[...g.players.values()].map(x=>({id:x.id,name:x.name})):undefined,
@@ -22,7 +24,7 @@ function state(g,a){
 }
 function broadcast(g){for(const c of [...g.clients])try{c.res.write('data: '+JSON.stringify(state(g,c.auth))+'\n\n');}catch{g.clients.delete(c);}}
 function reveal(g){
- if(g.phase!=='question')return;clearTimeout(g.timer);const q=questions[g.index];
+ if(g.phase!=='question')return;clearTimeout(g.timer);const q=g.questions[g.index];
  for(const p of g.players.values()){const a=g.answers.get(p.id);const correct=Boolean(a&&a.choice===q.correct);p.lastCorrect=correct;p.roundGain=0;
  if(correct){const remaining=Math.max(0,1-a.elapsed/(q.time*1000));p.roundGain=Math.round(pointsByLevel[q.level]*(0.5+0.5*remaining));p.score+=p.roundGain;p.correctCount++;}}
  g.phase='reveal';g.endsAt=0;broadcast(g);
@@ -30,11 +32,11 @@ function reveal(g){
 function newQuestion(g){
  clearTimeout(g.timer);g.phase='question';g.answers=new Map();
  for(const p of g.players.values()){p.roundGain=0;p.lastCorrect=null;}
- g.endsAt=Date.now()+questions[g.index].time*1000;
- g.timer=setTimeout(()=>reveal(g),questions[g.index].time*1000+35);broadcast(g);
+ g.endsAt=Date.now()+g.questions[g.index].time*1000;
+ g.timer=setTimeout(()=>reveal(g),g.questions[g.index].time*1000+35);broadcast(g);
 }
-function newGame(){let pin;do{pin=String(crypto.randomInt(100000,1000000));}while(games.has(pin));
- const g={pin,hostToken:id(),phase:'lobby',index:-1,players:new Map(),answers:new Map(),clients:new Set(),timer:null,endsAt:0,activeAt:Date.now()};games.set(pin,g);return g;}
+function newGame(topic='minez'){const chosen=Object.hasOwn(banks,topic)?topic:'minez';const bank=banks[chosen];let pin;do{pin=String(crypto.randomInt(100000,1000000));}while(games.has(pin));
+ const g={pin,topic:chosen,title:bank.title,questions:bank.questions,hostToken:id(),phase:'lobby',index:-1,players:new Map(),answers:new Map(),clients:new Set(),timer:null,endsAt:0,activeAt:Date.now()};games.set(pin,g);return g;}
 function origin(req){
  if(process.env.PUBLIC_URL)return process.env.PUBLIC_URL.replace(/\/$/,'');
  const proto=String(req.headers['x-forwarded-proto']||'http').split(',')[0];
@@ -44,8 +46,8 @@ function origin(req){
 async function api(req,res,u){
  const route=u.pathname;
  if(req.method==='GET'&&route==='/api/health')return write(res,200,{ok:true,games:games.size});
- if(req.method==='GET'&&route==='/api/config')return write(res,200,{joinOrigin:origin(req),questions:questions.length});
- if(req.method==='POST'&&route==='/api/create'){const g=newGame();return write(res,200,{pin:g.pin,token:g.hostToken,joinUrl:origin(req)+'/?pin='+g.pin});}
+ if(req.method==='GET'&&route==='/api/config')return write(res,200,{joinOrigin:origin(req),topics:Object.keys(banks),questions:minezQuestions.length});
+ if(req.method==='POST'&&route==='/api/create'){const b=await body(req),g=newGame(String(b.topic||'minez'));return write(res,200,{pin:g.pin,topic:g.topic,title:g.title,token:g.hostToken,joinUrl:origin(req)+'/?pin='+g.pin});}
  if(req.method==='POST'&&route==='/api/join'){
   const b=await body(req),g=gameFor(b.pin),name=String(b.name||'').trim().replace(/\s+/g,' ');
   if(name.length<2||name.length>24||/[\x00-\x1f]/.test(name))throw bad('Атыңыз 2–24 таңба арасында болсын');
@@ -64,14 +66,14 @@ async function api(req,res,u){
   if(g.phase!=='question'||Date.now()>g.endsAt)throw bad('Уақыт аяқталды',409);
   if(!Number.isInteger(b.choice)||b.choice<0||b.choice>3)throw bad('Нұсқа дұрыс емес');
   if(g.answers.has(p.id))throw bad('Жауап беріп қойдыңыз',409);
-  g.answers.set(p.id,{choice:b.choice,elapsed:Math.max(0,Date.now()-(g.endsAt-questions[g.index].time*1000))});broadcast(g);
+  g.answers.set(p.id,{choice:b.choice,elapsed:Math.max(0,Date.now()-(g.endsAt-g.questions[g.index].time*1000))});broadcast(g);
   if(g.answers.size===g.players.size)reveal(g);
   return write(res,200,{ok:true});
  }
  if(req.method==='POST'&&route==='/api/next'){
   const b=await body(req),g=gameFor(b.pin);auth(g,'host',b.token);
   if(g.phase!=='reveal')throw bad('Нәтиженің шығуын күтіңіз',409);
-  if(g.index===questions.length-1){g.phase='finished';broadcast(g);}else{g.index++;newQuestion(g);}
+  if(g.index===g.questions.length-1){g.phase='finished';broadcast(g);}else{g.index++;newQuestion(g);}
   return write(res,200,{ok:true});
  }
  if(req.method==='POST'&&route==='/api/restart'){
