@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const {server}=require('../server');
-const {questions}=require('../questions');
+const {questions}=require('../minez-questions');
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const url='http://127.0.0.1:'+server.address().port;
@@ -15,7 +15,8 @@ const {questions}=require('../questions');
   return p;
  };
  try{
-  const host=await open('/host');
+  const host=await open('/host?topic=minez');
+  assert.match(await host.locator('#topic-label').innerText(),/КӨРКЕМ МІНЕЗ/);
   await host.getByRole('button',{name:/ОЙЫН ҚҰРУ/}).click();
   await host.waitForSelector('.pin');
   const pin=(await host.locator('.pin').innerText()).trim();
