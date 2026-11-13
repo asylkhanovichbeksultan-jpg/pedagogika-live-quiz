@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="kk"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="theme-color" content="#0f082d"/><title>QUIZ ARENA — Педагогика Live</title>
+<meta name="theme-color" content="#0f082d"/><title>QUIZ ARENA — Көркем мінез Live</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
 :root{--bg:#0d0826;--text:#fcfbff;--muted:#b6a9d6;--violet:#9460ff;--green:#39e7a9;--pink:#ff73b3;--yellow:#ffc959;--blue:#4e98ff}
@@ -17,14 +17,25 @@ main{min-height:76vh;padding:36px 0 60px}h1,h2,h3,p{margin-top:0}h1{font:700 cla
 .leaders{display:grid;gap:10px}.leader{display:grid;grid-template-columns:45px 1fr auto;gap:8px;align-items:center;padding:13px 17px;background:#ffffff0b;border:1px solid #ffffff1e;border-radius:13px}.leader .rank{font-size:20px;font-weight:800;color:var(--yellow)}.leader strong{font-size:15px}.leader b{color:var(--green)}.grid2{display:grid;grid-template-columns:1fr 350px;gap:20px}.notice{padding:18px;border:1px solid #ffffff23;background:#ffffff0c;border-radius:13px;margin:20px 0}.notice strong{color:var(--green)}.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:end;margin-bottom:28px}.pod{padding:24px 10px;border-radius:17px;text-align:center;background:#251846;border:1px solid #ffffff28}.pod:nth-child(2){background:linear-gradient(#564092,#241844);border-color:#e3b75a}.pod em{font-style:normal;font-size:40px;display:block}.pod b{display:block;font-size:21px;overflow-wrap:anywhere}.pod span{color:var(--yellow);font-weight:800}.foot{display:flex;justify-content:space-between;gap:10px;padding:20px 0 25px;border-top:1px solid #ffffff12;color:#8e80b4;font-size:10px;letter-spacing:1px}.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#f2e9ff;color:#301a5b;padding:13px 20px;border-radius:12px;font-weight:800;box-shadow:0 18px 36px #0007;z-index:9;display:none;max-width:90vw}
 @media(max-width:760px){.hero,.lobbygrid,.grid2{grid-template-columns:1fr}.hero{min-height:0}.hero h1{font-size:43px}.tiles{grid-template-columns:repeat(3,1fr)}.panel{padding:20px}.answers{grid-template-columns:1fr;gap:10px}.answer{min-height:74px}.qtitle{margin:14px auto 25px}.pin{font-size:56px;letter-spacing:4px}.foot{flex-wrap:wrap}.podium{gap:7px}.pod{padding:15px 5px}.pod b{font-size:13px}.pod em{font-size:31px}.tag{font-size:10px}main{padding-top:25px}}
 </style></head><body>
-<div class="wrap"><nav><a class="logo" href="/host">✦ QUIZ<b>ARENA</b></a><span class="pill"><span class="dot"></span>ПЕДАГОГИКА · LIVE</span></nav>
-<main id="app"></main><footer class="foot"><span>YESSENOV · PEDAGOGY QUIZ</span><span>15 СҰРАҚ · 4 ЖАУАП · 1 ЖЕҢІМПАЗ</span></footer></div>
+<div class="wrap"><nav><a class="logo" href="/host">✦ QUIZ<b>ARENA</b></a><span class="pill"><span class="dot"></span><span id="topic-label">КӨРКЕМ МІНЕЗ · LIVE</span></span></nav>
+<main id="app"></main><footer class="foot"><span id="footer-topic">КӨРКЕМ МІНЕЗ · 5-СЫНЫП</span><span>15 СҰРАҚ · 4 ЖАУАП · 1 ЖЕҢІМПАЗ</span></footer></div>
 <div id="toast" class="toast"></div>
 <script>
 'use strict';
 const app=document.getElementById('app'),role=location.pathname==='/host'?'host':'player';
+const currentTopic=new URLSearchParams(location.search).get('topic')==='pedagogika'?'pedagogika':'minez';
+const sessionKey='quiz-'+role+(role==='host'?'-'+currentTopic:'');
 let session=null,view=null,events=null,roomUrl='';
-try{session=JSON.parse(sessionStorage.getItem('quiz-'+role)||'null');}catch{}
+try{session=JSON.parse(sessionStorage.getItem(sessionKey)||'null');}catch{}
+if(role==='player'&&session){
+ const pinFromLink=new URLSearchParams(location.search).get('pin');
+ if(pinFromLink&&pinFromLink!==session.pin){session=null;sessionStorage.removeItem(sessionKey);}
+}
+function updateLabels(){
+ const topic=view?.topic||currentTopic;
+ document.getElementById('topic-label').textContent=topic==='minez'?'КӨРКЕМ МІНЕЗ · LIVE':'ПЕДАГОГИКА · LIVE';
+ document.getElementById('footer-topic').textContent=topic==='minez'?'КӨРКЕМ МІНЕЗ · 5-СЫНЫП':'YESSENOV · PEDAGOGY QUIZ';
+}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tag=(s,extra='')=>'<span class="step"><span>'+esc(s)+'</span>'+extra+'</span>';
 const score=x=>Number(x||0).toLocaleString('kk-KZ');
@@ -36,15 +47,17 @@ const action=(txt,fn,cl='')=>{
 };
 function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>e.style.display='none',3200);}
 async function request(route,data){const r=await fetch('/api/'+route,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data||{})});const j=await r.json();if(!r.ok)throw Error(j.error||'Қате');return j;}
-function remember(s){session=s;sessionStorage.setItem('quiz-'+role,JSON.stringify(s));}
-function reset(){session=null;view=null;if(events){events.close();events=null;}sessionStorage.removeItem('quiz-'+role);render();}
+function remember(s){session=s;sessionStorage.setItem(sessionKey,JSON.stringify(s));}
+function reset(){session=null;view=null;if(events){events.close();events=null;}sessionStorage.removeItem(sessionKey);render();}
 function landing(){
- const intro='<div class="tag">⚡ ЖЫЛДАМДЫҚ · БІЛІМ · ЖЕҢІС</div><h1>БІЛІМІҢДІ<br><span class="grad">СЫНАП КӨР.</span></h1><p>Педагогика пәнінен нағыз тікелей эфир викторинасы. 15 сұрақ, жылдамдыққа берілетін ұпай, QR арқылы қосылу және жеңімпаздар подиумы.</p><div class="tiles"><div class="tile"><b>15</b><small>СҰРАҚ</small></div><div class="tile"><b>150</b><small>ҚАТЫСУШЫҒА ДЕЙІН</small></div><div class="tile"><b>LIVE</b><small>РЕЙТИНГ</small></div></div>';
- const hostForm='<div class="orb">🏆</div><div class="tag">ЖҮРГІЗУШІ РЕЖИМІ</div><h2>Ойын бөлмесін аш</h2><p>PIN код пен QR автоматты жасалады. Қатысушылар жиналғаннан кейін өзің бастайсың.</p>'+action('✦ ОЙЫН ҚҰРУ','create()','block green');
+ updateLabels();
+ const isMinez=currentTopic==='minez';
+ const intro='<div class="tag">'+(isMinez?'🤝 5-СЫНЫП · КӨРКЕМ МІНЕЗ':'⚡ ЖЫЛДАМДЫҚ · БІЛІМ · ЖЕҢІС')+'</div><h1>'+(isMinez?'ЖАҚСЫЛЫҚТЫ<br><span class="grad">ТАҢДА!</span>':'БІЛІМІҢДІ<br><span class="grad">СЫНАП КӨР.</span>')+'</h1><p>'+(isMinez?'Адалдық, мейірімділік, сабыр және жақсы сөз туралы 5-сыныпқа арналған қызықты ойын.':'Педагогика пәнінен тікелей эфир викторинасы.')+' 15 сұрақ, жылдамдыққа ұпай, QR арқылы кіру және жеңімпаздар подиумы.</p>'+(role==='host'?'<div class="notice"><small>ТАҚЫРЫПТЫ ТАҢДА:</small><p style="margin:8px 0 0"><a href="/host?topic=minez">🤝 Көркем мінез</a> · <a href="/host?topic=pedagogika">📚 Педагогика</a></p></div>':'')+'<div class="tiles"><div class="tile"><b>15</b><small>СҰРАҚ</small></div><div class="tile"><b>150</b><small>ҚАТЫСУШЫҒА ДЕЙІН</small></div><div class="tile"><b>LIVE</b><small>РЕЙТИНГ</small></div></div>';
+ const hostForm='<div class="orb">'+(currentTopic==='minez'?'💛':'🏆')+'</div><div class="tag">ЖҮРГІЗУШІ РЕЖИМІ</div><h2>'+(currentTopic==='minez'?'Көркем мінез ойыны':'Педагогика ойыны')+'</h2><p>PIN код пен QR автоматты жасалады. Қатысушылар жиналғаннан кейін өзің бастайсың.</p>'+action('✦ ОЙЫН ҚҰРУ','create()','block green');
  const playerForm='<div class="tag">ҚАТЫСУШЫ РЕЖИМІ</div><h2>Ойынға қосыл</h2><p>Жүргізушінің QR кодын сканерле немесе PIN енгіз.</p><div class="form"><label class="eyebrow">БӨЛМЕ PIN КОДЫ</label><input id="pinInput" inputmode="numeric" maxlength="6" placeholder="123456" value="'+esc(new URLSearchParams(location.search).get('pin')||'')+'"><label class="eyebrow">АТЫҢ</label><input id="nameInput" maxlength="24" placeholder="Мысалы, Айдана" autocomplete="nickname" onkeydown="if(event.key===&quot;Enter&quot;)join()">'+action('ОЙЫНҒА КІРУ →','join()','block green')+'</div>';
  app.innerHTML='<section class="hero"><div>'+intro+'</div><div class="bigcard">'+(role==='host'?hostForm:playerForm)+'</div></section>';
 }
-async function create(){try{const g=await request('create',{});remember({pin:g.pin,token:g.token});roomUrl=g.joinUrl;connect();}catch(e){toast(e.message);}}
+async function create(){try{const g=await request('create',{topic:currentTopic});remember({pin:g.pin,token:g.token,topic:g.topic});roomUrl=g.joinUrl;connect();}catch(e){toast(e.message);}}
 async function join(){const pin=document.getElementById('pinInput').value.trim(),name=document.getElementById('nameInput').value.trim();try{const g=await request('join',{pin,name});remember({pin:g.pin,token:g.token,name:g.name});connect();}catch(e){toast(e.message);}}
 function connect(){
  if(events){events.close();events=null;}if(!session)return landing();
@@ -94,7 +107,7 @@ function startButton(){
 function lobby(){
  if(role==='host'){
  const link=location.origin+'/?pin='+view.pin,qr='https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=10&data='+encodeURIComponent(link);
- app.innerHTML='<section class="stage"><div class="step"><span>01 · ОЙЫН БӨЛМЕСІ</span><span>LIVE LOBBY</span></div><h2>Қатысушыларды шақыр <span style="color:var(--green)">●</span></h2><div class="lobbygrid"><div class="panel" style="text-align:center"><div class="eyebrow">ОЙЫН PIN КОДЫ</div><div class="pin">'+view.pin+'</div><img class="qr" alt="Ойынға қосылу QR коды" src="'+qr+'"><small>QR кодты телефонмен сканерле</small><p class="link">'+esc(link)+'</p>'+action('🔗 СІЛТЕМЕНІ КӨШІРУ','shareLink()','secondary block')+'</div><div class="panel"><div class="tag">ҚАТЫСУШЫЛАР · '+view.participantCount+'</div><h2>Барлығы дайын ба?</h2><div class="namelist">'+(playerNames()||'<div class="empty">Қатысушылар қосылғанда есімдері осында шығады ✨</div>')+'</div>'+startButton()+'<p class="subhead">Қатысушылар жиналып болған соң баста</p></div></div></section>';
+ app.innerHTML='<section class="stage"><div class="step"><span>01 · ОЙЫН БӨЛМЕСІ</span><span>LIVE LOBBY</span></div><h2>Қатысушыларды шақыр <span style="color:var(--green)">●</span></h2><p>'+esc(view.title)+'</p><div class="lobbygrid"><div class="panel" style="text-align:center"><div class="eyebrow">ОЙЫН PIN КОДЫ</div><div class="pin">'+view.pin+'</div><img class="qr" alt="Ойынға қосылу QR коды" src="'+qr+'"><small>QR кодты телефонмен сканерле</small><p class="link">'+esc(link)+'</p>'+action('🔗 СІЛТЕМЕНІ КӨШІРУ','shareLink()','secondary block')+'</div><div class="panel"><div class="tag">ҚАТЫСУШЫЛАР · '+view.participantCount+'</div><h2>Барлығы дайын ба?</h2><div class="namelist">'+(playerNames()||'<div class="empty">Қатысушылар қосылғанда есімдері осында шығады ✨</div>')+'</div>'+startButton()+'<p class="subhead">Қатысушылар жиналып болған соң баста</p></div></div></section>';
  }else{
  app.innerHTML='<section class="stage" style="max-width:650px;text-align:center"><div class="panel"><div class="orb">✨</div><div class="tag">СЕН ОЙЫНҒА ҚОСЫЛДЫҢ</div><h2>Сәлем, '+esc(view.personal?.name||session.name)+'!</h2><p>Жүргізуші ойынды бастағанша осы бетте қал.</p><div class="pin">'+view.pin+'</div><div class="notice">👥 Қатысушылар саны: <strong>'+view.participantCount+'</strong></div><div class="pill">⏳ Ойын басталуын күтудеміз</div></div></section>';
  }
@@ -122,7 +135,7 @@ function finished(){
  const a=view.leaders||[],pod=a.slice(0,3),order=[pod[1],pod[0],pod[2]],em=['🥈','🥇','🥉'];
  app.innerHTML='<section class="stage" style="max-width:850px;text-align:center"><div class="tag">🏆 ЖЕҢІМПАЗДАР СӘТІ</div><h1>ОЙЫН <span class="grad">АЯҚТАЛДЫ!</span></h1><p>15 сұрақтың қорытындысы. Білімділер мен жылдамдар жеңіске жетті!</p><div class="podium">'+order.map((p,i)=>'<div class="pod"><em>'+em[i]+'</em><b>'+esc(p?.name||'—')+'</b><span>'+score(p?.score)+' P</span></div>').join('')+'</div><div class="panel" style="text-align:left"><div class="tag">ТОЛЫҚ РЕЙТИНГ</div><div class="leaders">'+leaderboard()+'</div></div>'+(role==='host'?'<div style="margin-top:24px">'+action('↻ ҚАЙТА ОЙНАУ','command(&quot;restart&quot;)','green')+'</div>':'<div class="notice">Жарайсың! Сенің орның: <strong>#'+view.personal?.rank+'</strong></div>')+'</section>';
 }
-function render(){if(!session||!view){landing();return;}if(view.phase==='lobby')lobby();else if(view.phase==='question')question();else if(view.phase==='reveal')reveal();else if(view.phase==='finished')finished();}
+function render(){updateLabels();if(!session||!view){landing();return;}if(view.phase==='lobby')lobby();else if(view.phase==='question')question();else if(view.phase==='reveal')reveal();else if(view.phase==='finished')finished();}
 function tick(){const q=view?.question;if(!q||view?.phase!=='question')return;const diff=Math.max(0,q.endsAt-Date.now()),clock=document.getElementById('timer'),bar=document.getElementById('timerbar');if(clock)clock.textContent=Math.ceil(diff/1000);if(bar)bar.style.width=(diff/(q.duration*1000)*100)+'%';}
 setInterval(tick,200);setInterval(()=>{if(session)refresh();},9000);
 if(session)connect();else landing();
