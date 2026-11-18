@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101b38">
+<meta name="description" content="БББ кестесі — Білемін, Білгім келеді, Білдім. QR-кодпен анонимді интерактивті кері байланыс.">
+<title>БББ — Білемін · Білгім келеді · Білдім</title>
+<style>
+:root{--night:#0d1630;--ink:#142744;--navy:#1b3156;--muted:#647792;--sky:#e8f5ff;--purple:#6954cd;--orange:#dd814c;--mint:#0f978e;--line:#d7e2ec;--white:#fff;--shadow:0 24px 50px #132a4b15}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font:16px/1.57 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--ink);background:radial-gradient(ellipse at 13% 3%,#d6e9ff 0,transparent 29%),radial-gradient(ellipse at 92% 30%,#f4e4ff 0,transparent 31%),#f6f8fc;min-height:100vh}button,input,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #5d9eff;outline-offset:3px}[hidden]{display:none!important}
+.wrap{width:min(1180px,calc(100% - 38px));margin:0 auto}
+nav{height:78px;display:flex;gap:13px;align-items:center;justify-content:space-between;border-bottom:1px solid #d3dfea}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--night);font-weight:950;font-size:22px;letter-spacing:-.06em}.logoIcon{display:grid;place-items:center;width:45px;height:45px;border-radius:15px;background:linear-gradient(140deg,#1e3260,#4557a3);color:white;font-size:24px;box-shadow:0 8px 14px #182a5a30}.logo small{display:block;color:var(--muted);font-size:11px;letter-spacing:.03em;font-weight:750;line-height:1.3}
+.navPill{border-radius:40px;padding:7px 14px;background:#eaf1fb;color:#486083;font-size:11px;font-weight:900;letter-spacing:.065em}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:34px;padding:58px 0 35px}.eyebrow{display:flex;align-items:center;gap:8px;font-weight:900;font-size:12px;letter-spacing:.12em;color:#7055c5;text-transform:uppercase}.eyebrow:before{content:"";height:7px;width:21px;background:#8c77df;border-radius:10px}
+h1{font-size:clamp(42px,5.6vw,75px);line-height:1.07;letter-spacing:-.065em;margin:15px 0 18px;color:#132449}h1 span{color:#7460d2}.lead{font-size:17px;color:#5c6f89;max-width:610px;margin:0 0 22px}.topic{display:inline-flex;align-items:center;gap:7px;background:#ffffffba;border:1px solid #dee5ef;color:#657693;font-size:12px;border-radius:13px;padding:11px 13px;box-shadow:0 7px 20px #102a5510}
+.preview{display:flex;justify-content:center;align-items:center;gap:0;padding:20px 0 15px;perspective:700px}.paper{border:1px solid #e7e1ec;border-radius:18px;background:white;padding:20px 17px 18px;width:147px;min-height:205px;box-shadow:0 19px 36px #24375426;transform:rotate(-7deg);position:relative}.paper:nth-child(2){transform:translateY(-18px) rotate(2deg);z-index:2;box-shadow:0 25px 37px #24375436}.paper:nth-child(3){transform:rotate(9deg)}.paper .pIcon{font-size:27px;margin-bottom:20px}.paper h3{font-size:18px;line-height:1.2;margin:0 0 14px}.line{border-radius:5px;height:6px;margin:10px 0;background:#f0f2f6}.paper:nth-child(1){border-top:7px solid #6d58d8}.paper:nth-child(2){border-top:7px solid #eca25c}.paper:nth-child(3){border-top:7px solid #2ab9aa}
+.cards2{display:grid;grid-template-columns:1fr 1fr;gap:19px}.card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow)}.card h2,.sectionHeading{margin:0 0 11px;letter-spacing:-.037em;font-size:27px;line-height:1.2;color:#152849}.card h3{margin:0 0 10px;font-size:20px;letter-spacing:-.025em}.textMuted{color:var(--muted)}.small{font-size:13px;color:var(--muted)}.card p{margin:10px 0 18px}
+.flag{display:inline-flex;gap:6px;align-items:center;font-size:11px;font-weight:950;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}.flag.purple{color:#7661cf}.flag.orange{color:#b66833}.flag.mint{color:#09877c}
+.btn{background:#1c315a;border:0;color:white;padding:13px 20px;border-radius:13px;min-height:49px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 7px 14px #122b5420;transition:filter .15s,transform .15s;text-decoration:none}.btn:hover{transform:translateY(-2px);filter:brightness(1.07)}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;filter:none}.btn.purple{background:linear-gradient(110deg,#6c57ca,#8675de)}.btn.mint{background:linear-gradient(105deg,#079a91,#27bca6)}.btn.orange{background:#f4af61;color:#4a2714}.btn.outline{background:white;color:#23436b;border:1px solid #cbd9e9;box-shadow:none}.btn.danger{background:#fff2f0;color:#a53b49;border:1px solid #f0ccd0;box-shadow:none}
+.row{display:flex;gap:11px;align-items:center;flex-wrap:wrap}.input{border:1px solid #ccd9e9;background:#f9fbff;padding:14px;border-radius:12px;outline:none;min-width:0;width:100%;color:#1b2f50}.input:focus{border-color:#8072d2;background:white}textarea.input{min-height:138px;resize:vertical;line-height:1.55}.joinForm{display:flex;gap:9px}.joinForm .input{flex:1}.back{background:none;border:0;color:#657ba2;font-weight:850;padding:12px 0;margin-bottom:7px}.back:hover{color:#293b6c}
+.section{margin:10px 0 35px}.gridHost{display:grid;grid-template-columns:minmax(300px,.92fr) minmax(300px,1.08fr);gap:18px}.label{font-size:12px;text-transform:uppercase;color:#7b8ba4;letter-spacing:.13em;font-weight:900}.code{font-size:40px;font-weight:950;letter-spacing:.2em;color:#233a6b;line-height:1.3;margin:5px 0 10px}
+.qr{width:238px;height:238px;border-radius:20px;background:white;border:1px solid #d9e2ec;display:flex;align-items:center;justify-content:center;margin:17px auto;box-shadow:0 8px 20px #1f396716}.qr img{height:214px;width:214px;object-fit:contain}.link{background:#f2f6fc;border:1px solid #dbe6f1;padding:11px 12px;border-radius:12px;font-size:12px;overflow-wrap:anywhere;color:#335b8f;margin:11px 0}
+.badge{display:inline-flex;align-items:center;gap:8px;background:#e5e2ff;color:#5d4aaa;border:1px solid #d3ccff;border-radius:50px;padding:7px 13px;font-size:12px;font-weight:900}.badge.end{background:#fff0dc;border-color:#f5d7ab;color:#995c24}.badge.finish{background:#d7f6ed;border-color:#b5eadb;color:#087d70}.badge:before{content:"";height:7px;width:7px;background:currentColor;border-radius:50%}
+.steps{display:flex;gap:0;align-items:center;justify-content:space-between;margin:23px 0}.step{display:flex;align-items:center;gap:7px;color:#8a99ad;font-size:12px;font-weight:850}.step .num{display:grid;place-items:center;width:29px;height:29px;border-radius:50%;background:#e9eff8;color:#697b98}.step.active{color:#283a67}.step.active .num{background:#7b66d8;color:white}.step.done .num{background:#1ca89f;color:white}.stepLine{height:1px;background:#d5e1ef;flex:1;margin:0 8px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0 24px}.metric{border-radius:16px;border:1px solid #dce6ef;background:#f7faff;padding:16px 12px}.metric b{display:block;font-size:28px;color:#263b68;line-height:1.2}.metric span{font-size:11px;color:#75859b;line-height:1.4;display:block;margin-top:3px}
+.rule{height:1px;background:#dfE6ef;margin:23px 0}.tip{font-size:13px;color:#607592;border-left:3px solid #8c7ce0;padding:6px 0 6px 13px;margin:12px 0}
+.studentMain{max-width:800px;margin:0 auto}.stHead{display:flex;justify-content:space-between;align-items:center;gap:13px;flex-wrap:wrap}.studentCol{margin:18px 0}.fieldLabel{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:8px}.fieldLabel strong{font-size:19px}.fieldTag{font-size:11px;font-weight:900;border-radius:40px;padding:4px 11px}.fieldTag.purple{color:#624db5;background:#ede9ff}.fieldTag.orange{color:#a35e26;background:#fff0dc}.fieldTag.mint{color:#13877d;background:#e3f9f2}
+.prompt{margin:0 0 10px!important;color:#70839e;font-size:13px}.previewOwn{padding:17px 19px;border-radius:16px;background:#f5f8fd;border:1px solid #dee6f1;margin:14px 0}.previewOwn strong{display:block;font-size:13px;color:#516588;margin-bottom:3px}.previewOwn p{margin:0 0 12px;overflow-wrap:anywhere;white-space:pre-wrap}.previewOwn p:last-child{margin-bottom:0}
+.progressOptions{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:12px 0 20px}.opt{border:2px solid #e1e6ef;background:#f9fbff;border-radius:17px;padding:15px;text-align:left;color:#304664;min-height:112px}.opt strong{display:block;font-size:14px;margin:7px 0 3px}.opt small{color:#73849b;font-size:11px;line-height:1.3;display:block}.opt.selected{border-color:#7763d5;background:#f4f0ff}.opt:disabled{opacity:.6}.message{border:1px solid #aedac9;background:#e4f8ef;border-radius:13px;color:#18785f;padding:13px 16px;margin:17px 0;font-size:14px}.message.warn{background:#fff1e3;color:#a56e25;border-color:#f7daba}
+.resultsHeader{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}.analysis{display:grid;grid-template-columns:.8fr 1.2fr;gap:22px;align-items:center}.donut{height:205px;width:205px;border-radius:50%;margin:0 auto;display:grid;place-items:center;position:relative;background:conic-gradient(#e9eef8 0% 100%)}.donut:before{content:"";position:absolute;inset:36px;border-radius:50%;background:#fff}.center{position:relative;text-align:center}.center b{font-size:42px;display:block;line-height:1.1;color:#223a64}.center small{color:#7b8ca5;font-size:12px}.legendEntry{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #ecf0f5}.legendEntry:last-child{border:0}.legendEntry .name{font-size:14px;font-weight:750}.legendEntry .sub{font-size:11px;color:#8392a5}.legendEntry .value{font-size:16px;font-weight:950}.keyDot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px}
+.tableScroller{max-height:620px;overflow:auto;border:1px solid #dce6ef;border-radius:16px;margin-top:16px}table{border-collapse:collapse;width:100%;min-width:760px;table-layout:fixed}th{background:#edf1fb;position:sticky;top:0;z-index:1;text-align:left;padding:15px 16px;color:#314b79;font-size:12px;letter-spacing:.02em}td{vertical-align:top;border-top:1px solid #e4eaf3;padding:17px 16px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.5}tr:nth-child(even) td{background:#fafbfe}th:first-child{width:60px}th:nth-child(2){border-top:4px solid #795ed2}th:nth-child(3){border-top:4px solid #e8a462}th:nth-child(4){border-top:4px solid #29ae9f}th:nth-child(5){width:113px}
+.statusCell{font-weight:800;font-size:11px;border-radius:50px;display:inline-block;padding:5px 8px;background:#edf3fa;color:#6b7b97}.statusCell.yes{background:#dcf7ef;color:#0a8b76}
+.foot{padding:47px 0 28px;text-align:center;color:#91a0b2;font-size:12px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:90vw;width:max-content;background:#1d335b;color:white;padding:13px 18px;border-radius:14px;box-shadow:0 17px 38px #1a315b65;z-index:10;text-align:center}
+@media(max-width:900px){.hero{grid-template-columns:1fr;gap:14px;padding:40px 0 25px}.preview{min-height:218px}.gridHost,.analysis{grid-template-columns:1fr}.donut{margin:10px auto}.analysis{gap:4px}.card{padding:23px}}@media(max-width:570px){.wrap{width:calc(100% - 26px)}nav{height:70px}.logo{font-size:19px}.navPill{font-size:9px;padding:6px 10px}.hero h1{font-size:45px}.hero .lead{font-size:15px}.cards2,.progressOptions{grid-template-columns:1fr}.preview{padding:16px 0}.paper{width:116px;min-height:160px;padding:15px 12px}.paper h3{font-size:15px}.paper .pIcon{font-size:22px;margin-bottom:15px}.card{padding:19px}.card h2{font-size:24px}.joinForm{flex-direction:column}.metrics{gap:6px}.metric{padding:13px 9px}.metric b{font-size:24px}.metric span{font-size:10px}.steps{gap:5px}.step{font-size:10px}.step .num{height:25px;width:25px}.stepLine{margin:0 1px}.progressOptions{gap:8px}.opt{min-height:0}.qr{width:226px;height:226px}.qr img{width:204px;height:204px}.code{font-size:33px}.row .btn{width:100%}.topic{font-size:11px}.stHead{align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav><a class="logo" href="/bbb/"><span class="logoIcon">✦</span><span>БББ<span style="color:#7967dc">.</span><small>Сабақтағы рефлексия</small></span></a><span class="navPill">9-АПТА · ФИЗИКА(IP)-25</span></nav>
+<main>
+<section class="hero">
+ <div><div class="eyebrow">Ойлан · Зертте · Қорытындыла</div><h1>Білемін.<br><span>Білгім келеді.</span><br>Білдім.</h1>
+ <p class="lead">Сабақ басталғанда білетініңді және білгің келетінін жаз. Сабақ соңында жаңа біліміңді белгілеп, өз дамуыңды бағала.</p>
+ <div class="topic">📖 Мұғалімнің кәсіби іс-әрекетіндегі оқыту технологиялары</div></div>
+ <div class="preview" aria-hidden="true"><div class="paper"><div class="pIcon">💭</div><h3>Білемін</h3><div class="line"></div><div class="line" style="width:80%"></div><div class="line" style="width:57%"></div></div><div class="paper"><div class="pIcon">🔎</div><h3>Білгім келеді</h3><div class="line"></div><div class="line" style="width:73%"></div><div class="line" style="width:90%"></div></div><div class="paper"><div class="pIcon">✨</div><h3>Білдім</h3><div class="line"></div><div class="line" style="width:78%"></div><div class="line" style="width:63%"></div></div></div>
+</section>
+<section class="section" id="landing">
+<div class="cards2">
+ <article class="card"><div class="flag purple">✦ Мұғалімге</div><h2>Сабақты бастау</h2><p class="textMuted">Жеке сессияны ашып, QR-кодты сыныпқа көрсетіңіз. Оқушылардың жауаптарын және сабақ соңындағы прогресті бақылаңыз.</p><button type="button" class="btn purple" id="createBtn">Жаңа БББ сессиясын ашу ↗</button></article>
+ <article class="card"><div class="flag orange">◉ Оқушыға</div><h2>Сабаққа қосылу</h2><p class="textMuted">QR-кодты сканерлеңіз немесе мұғалім айтқан алты таңбалы кодты енгізіңіз. Атыңыз сұралмайды.</p><form class="joinForm" id="joinForm"><input class="input" id="joinCode" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="Сессия коды" aria-label="6 таңбалы код" required><button type="submit" class="btn">Кіру →</button></form></article>
+</div></section>
+<section class="section" id="teacher" hidden>
+<button class="back" id="backHost">← Басты бет</button>
+<div class="gridHost">
+ <article class="card">
+  <div class="flag purple">Мұғалім панелі</div><h2>Оқушыларды шақырыңыз</h2><span class="badge" id="hostBadge">Сабақ басы · Б/Б</span>
+  <div class="qr"><img id="qr" alt="Оқушыларға арналған QR-код" width="214" height="214"></div><div style="text-align:center"><div class="label">Бөлме коды</div><div class="code" id="teacherCode">000000</div></div>
+  <div class="link" id="joinLink"></div><div class="row"><button type="button" class="btn outline" id="copyJoin">Оқушы сілтемесін көшіру</button><button type="button" class="btn outline" id="copyHost">Мұғалім сілтемесін көшіру</button></div>
+ </article>
+ <article class="card">
+  <div class="flag mint">Сессия барысы</div><h2>Сыныптың оқу прогресі</h2><div class="steps"><div class="step" id="st1"><span class="num">1</span>Білемін · Білгім келеді</div><span class="stepLine"></span><div class="step" id="st2"><span class="num">2</span>Білдім</div><span class="stepLine"></span><div class="step" id="st3"><span class="num">3</span>Нәтиже</div></div>
+  <div class="metrics"><div class="metric"><b id="joined">0</b><span>Қатысушы</span></div><div class="metric"><b id="begun">0</b><span>Бастапқы жауап</span></div><div class="metric"><b id="ended">0</b><span>Қорытынды жауап</span></div></div>
+  <div class="rule"></div><h3>Мұғалім әрекеттері</h3><p class="textMuted" id="teacherHint">Оқушылар бірінші және екінші бағанды толтырып болған соң келесі кезеңді ашыңыз.</p>
+  <div class="row"><button id="openAfter" class="btn orange" type="button">↗ «Білдім» кезеңін ашу</button><button id="publish" class="btn mint" type="button" hidden>◉ Нәтижені шығару</button><button id="reopen" class="btn orange" type="button" hidden>↻ «Білдім» қайта ашу</button><button id="reset" class="btn danger" type="button">Жаңа сабаққа тазалау</button></div>
+  <p class="tip">Оқушылардың жауаптары аты-жөнсіз сақталады. Нәтижені жариялағаннан кейін барлық қатысушы сынып кестесін көре алады.</p>
+ </article>
+</div></section>
+<section class="section studentMain" id="student" hidden>
+<button class="back" id="backStudent">← Басты бет</button>
+<article class="card">
+ <div class="stHead"><div><div class="flag purple">Оқушының жеке парағы</div><h2>Менің БББ кестем</h2></div><span class="badge" id="studentBadge">Сабақ басы</span></div>
+ <p class="small">Сессия: <strong id="studentCode"></strong> · Аты-жөніңді жазу қажет емес. Өз ойыңды еркін жеткіз.</p>
+ <div id="beforePane">
+  <div class="studentCol"><div class="fieldLabel"><strong>01 · Білемін</strong><span class="fieldTag purple">Сабақ басы</span></div><p class="prompt">Осы тақырып жайында бұрын қандай мәлімет білесің?</p><textarea maxlength="650" class="input" id="know" placeholder="Мысалы: Оқыту технологиясының мақсаты нәтижеге жету екенін білемін..."></textarea></div>
+  <div class="studentCol"><div class="fieldLabel"><strong>02 · Білгім келеді</strong><span class="fieldTag orange">Сабақ басы</span></div><p class="prompt">Қай сұраққа жауап алғың келеді?</p><textarea maxlength="650" class="input" id="want" placeholder="Мысалы: Проблемалық және модульдік оқыту қалай ерекшеленеді?"></textarea></div>
+  <div id="beforeSaved" class="message" hidden>✓ Сабақ басындағы жауаптарың сақталды. Қаласаң өзгерте аласың.</div><button id="saveBefore" type="button" class="btn purple">✓ Екі бағанды сақтау</button>
+ </div>
+ <div id="afterPane" hidden>
+  <div class="previewOwn" id="ownBefore"><strong>«Білемін»</strong><p id="ownKnow">—</p><strong>«Білгім келеді»</strong><p id="ownWant">—</p></div>
+  <div class="studentCol"><div class="fieldLabel"><strong>03 · Білдім</strong><span class="fieldTag mint">Сабақ соңы</span></div><p class="prompt">Сабақтан қандай жаңа нәрсе үйрендің? Алдыңғы сұрағыңа жауап таптың ба?</p><textarea maxlength="650" class="input" id="learned" placeholder="Мысалы: Репродуктивті оқыту үлгі бойынша қайталау, ал продуктивті оқыту ізденіс арқылы жаңа білімді құру екен..."></textarea></div>
+  <h3>Өз прогресіңді бағала</h3><p class="small">Сабақ алдындағы және сабақ соңындағы түсінігіңді салыстыр.</p>
+  <div class="progressOptions">
+   <button type="button" class="opt" data-progress="grew" aria-pressed="false"><span>🌱</span><strong>Білімім артты</strong><small>Көп жаңа нәрсе үйрендім</small></button>
+   <button type="button" class="opt" data-progress="some" aria-pressed="false"><span>💡</span><strong>Аздап дамыдым</strong><small>Әлі де сұрақтарым бар</small></button>
+   <button type="button" class="opt" data-progress="help" aria-pressed="false"><span>🤝</span><strong>Көмек қажет</strong><small>Тақырыпты толықтыру керек</small></button>
+  </div>
+  <div class="message" id="afterSaved" hidden>✓ Сабақ соңындағы жауабың сақталды. Нәтиженің жариялануын күте тұр.</div>
+  <button type="button" class="btn mint" id="saveAfter">✓ «Білдім» бағанын сақтау</button>
+ </div>
+ <div id="publishedPane" hidden><div class="message">✨ Нәтижелер жарияланды! Өз прогресіңді төмендегі ортақ БББ кестесімен салыстыр.</div><div class="previewOwn"><strong>Білемін</strong><p id="doneKnow">—</p><strong>Білгім келеді</strong><p id="doneWant">—</p><strong>Білдім</strong><p id="doneLearned">—</p></div></div>
+ <div id="lateNotice" class="message warn" hidden>Сабақ басындағы жауап беру кезеңі аяқталғандықтан, бұл сессияға енді жаңа жауап қоса алмайсың.</div>
+</article></section>
+<section class="section" id="results" hidden>
+<article class="card">
+ <div class="resultsHeader"><div><div class="flag mint">Қорытынды есеп</div><h2>БББ — сынып кестесі</h2></div><span class="badge finish">Анонимді жауаптар</span></div>
+ <p class="textMuted">Оқушылардың «Білемін», «Білгім келеді», «Білдім» жауаптары және өзіндік бағалауы. Аты-жөндері көрсетілмейді.</p>
+ <div class="metrics"><div class="metric"><b id="resStarted">0</b><span>Алғашқы екі бағанды толтырды</span></div><div class="metric"><b id="resFinished">0</b><span>Үшінші бағанды толтырды</span></div><div class="metric"><b id="resPercent">0%</b><span>Аяқтау үлесі</span></div></div>
+ <div class="rule"></div><h3>Өз прогресін бағалау</h3><div class="analysis"><div class="donut" id="donut"><div class="center"><b id="progressCount">0</b><small>қорытынды жауап</small></div></div><div id="legend"></div></div>
+ <div class="rule"></div><h3>Оқушылардың жауаптары</h3><p class="small">Кестені телефонда оңға жылжытып қарай аласыз.</p>
+ <div class="tableScroller"><table><thead><tr><th>№</th><th>Білемін</th><th>Білгім келеді</th><th>Білдім</th><th>Прогресс</th></tr></thead><tbody id="resultRows"><tr><td colspan="5">Жауаптар әзірге жоқ.</td></tr></tbody></table></div>
+</article></section>
+</main><footer class="foot">БББ әдісі · 9-апта · Ерғали Бексұлтан және Рүстем Жасұлан · Физика(IP)-25</footer>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const q=new URLSearchParams(location.search),room=q.get('host')||q.get('room'),isHost=q.has('host'),key=q.get('key')||'',mode=room?(isHost?'host':'student'):'landing';
+let savedMine=null,stage=null,chosenProgress=null,appliedBefore=false,appliedAfter=false,joinUrl='',savedBefore=false,savedAfter=false;
+let voter='';
+try{voter=localStorage.getItem('bbb-id-'+room)||'';if(!voter){voter=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem('bbb-id-'+room,voter)}}catch{voter=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36))}
+const show=(id,yes)=>$(id).hidden=!yes;
+const toast=t=>{const n=$('toast');n.textContent=t;n.hidden=false;clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>n.hidden=true,3300)};
+async function req(action,data,verb='POST'){const headers={'Content-Type':'application/json'};if(isHost)headers['X-Host-Key']=key;else headers['X-Voter-Key']=voter;const opt={method:verb,headers};if(verb!=='GET')opt.body=JSON.stringify(data||{});const url='/bbb/api/'+action+(verb==='GET'?'?room='+encodeURIComponent(room):'');const r=await fetch(url,opt);let d={};try{d=await r.json()}catch{}if(!r.ok)throw Error(d.error||'Серверге қосылу қатесі');return d}
+const labels={grew:'Білімім артты',some:'Аздап дамыдым',help:'Көмек қажет'};
+const colors={grew:'#26b7a6',some:'#e9a15d',help:'#8069dc'};
+function progressSelection(){document.querySelectorAll('[data-progress]').forEach(b=>{const on=b.dataset.progress===chosenProgress;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))})}
+document.querySelectorAll('[data-progress]').forEach(b=>b.addEventListener('click',()=>{chosenProgress=b.dataset.progress;progressSelection()}));
+function updateSteps(s){const order={before:1,after:2,published:3},now=order[s]||1;for(let i=1;i<=3;i++){const x=$('st'+i);x.classList.toggle('active',i===now);x.classList.toggle('done',i<now)}}
+function setTeacher(s){$('joined').textContent=s.joined;$('begun').textContent=s.started;$('ended').textContent=s.finished;updateSteps(s.stage);const text={before:'Сабақ басы · Білемін / Білгім келеді',after:'Сабақ соңы · Білдім',published:'Нәтиже жарияланды'};$('hostBadge').textContent=text[s.stage];$('hostBadge').className='badge'+(s.stage==='after'?' end':s.stage==='published'?' finish':'');show('openAfter',s.stage==='before');show('publish',s.stage==='after');show('reopen',s.stage==='published');$('teacherHint').textContent=s.stage==='before'?'Оқушылар алғашқы екі бағанды толтырғаннан кейін «Білдім» кезеңін ашыңыз.':s.stage==='after'?'Оқушылар жаңа үйренгенін жазып, прогресін бағалап жатыр. Барлығы аяқтаса, нәтижені жариялаңыз.':'БББ кестесі жарияланды. Қажет болса, үшінші бағанды қайта ашуға болады.';renderResults(s,s.stage!=='before')}
+function placeMine(m){if(!m)return;savedMine=m;savedBefore=Boolean(m.know&&m.want);savedAfter=Boolean(m.learned&&m.progress);
+ if(!appliedBefore){$('know').value=m.know||'';$('want').value=m.want||'';appliedBefore=true}
+ if(!appliedAfter){$('learned').value=m.learned||'';chosenProgress=m.progress||null;progressSelection();appliedAfter=true}
+ $('ownKnow').textContent=m.know||'—';$('ownWant').textContent=m.want||'—';$('doneKnow').textContent=m.know||'—';$('doneWant').textContent=m.want||'—';$('doneLearned').textContent=m.learned||'Әзірге толтырылмады'}
+function setStudent(s){placeMine(s.mine);const step=s.stage;const text={before:'1-кезең · Сабақ басы',after:'2-кезең · Сабақ соңы',published:'3-кезең · Нәтиже'};$('studentBadge').textContent=text[step];$('studentBadge').className='badge'+(step==='after'?' end':step==='published'?' finish':'');show('beforePane',step==='before');show('afterPane',step==='after'&&Boolean(s.mine&&s.mine.know&&s.mine.want));show('publishedPane',step==='published');show('lateNotice',step==='after'&&!(s.mine&&s.mine.know&&s.mine.want));show('beforeSaved',step==='before'&&savedBefore);show('afterSaved',step==='after'&&savedAfter);renderResults(s,step==='published')}
+function cell(text,className){const td=document.createElement('td');if(className)td.className=className;td.textContent=text||'—';return td}
+function renderResults(s,visible){const x=s.summary;show('results',Boolean(visible&&x));if(!visible||!x)return;
+ $('resStarted').textContent=x.started;$('resFinished').textContent=x.finished;$('resPercent').textContent=x.pct+'%';$('progressCount').textContent=x.finished;
+ const a=x.progress.grew||0,b=x.progress.some||0,c=x.progress.help||0,t=a+b+c;
+ $('donut').style.background=t?'conic-gradient('+colors.grew+' 0% '+(a/t*100)+'%,'+colors.some+' '+(a/t*100)+'% '+((a+b)/t*100)+'%,'+colors.help+' '+((a+b)/t*100)+'% 100%)':'conic-gradient(#e8edf6 0% 100%)';
+ const legend=$('legend');legend.replaceChildren();for(const id of ['grew','some','help']){const n=x.progress[id]||0,pct=t?Math.round(n/t*100):0;const el=document.createElement('div');el.className='legendEntry';const left=document.createElement('div'),name=document.createElement('div'),sub=document.createElement('div'),v=document.createElement('div'),dot=document.createElement('span');dot.className='keyDot';dot.style.background=colors[id];name.className='name';name.append(dot,document.createTextNode(labels[id]));sub.className='sub';sub.textContent=n+' оқушы';left.append(name,sub);v.className='value';v.textContent=pct+'%';el.append(left,v);legend.append(el)}
+ const body=$('resultRows');body.replaceChildren();if(!x.rows.length){const tr=document.createElement('tr');const empty=cell('Жауаптар әзірге жоқ.');empty.colSpan=5;tr.append(empty);body.append(tr)}
+ for(const r of x.rows){const tr=document.createElement('tr');tr.append(cell(String(r.number)),cell(r.know),cell(r.want),cell(r.learned||'Әлі жауап бермеді'));const td=document.createElement('td');const badge=document.createElement('span');badge.className='statusCell'+(r.progress?' yes':'');badge.textContent=labels[r.progress]||'Күтуде';td.append(badge);tr.append(td);body.append(tr)}
+}
+let fetchInFlight=false;
+async function refresh(){if(!room||fetchInFlight)return;fetchInFlight=true;try{const s=await req('state',null,'GET');stage=s.stage;if(isHost)setTeacher(s);else setStudent(s)}catch(e){if(!stage)toast(e.message)}finally{fetchInFlight=false}}
+async function copy(text){try{await navigator.clipboard.writeText(text);toast('Сілтеме көшірілді ✓')}catch{window.prompt('Сілтемені көшіріңіз:',text)}}
+$('createBtn').onclick=async()=>{const b=$('createBtn');b.disabled=true;b.textContent='Сессия құрылуда...';try{const x=await req('create',{});location.assign('/bbb/?host='+x.room+'&key='+encodeURIComponent(x.key))}catch(e){toast(e.message);b.disabled=false;b.textContent='Жаңа БББ сессиясын ашу ↗'}};
+$('joinForm').onsubmit=e=>{e.preventDefault();const code=$('joinCode').value.trim();if(!/^\d{6}$/.test(code))return toast('Алты саннан тұратын кодты енгізіңіз');location.assign('/bbb/?room='+code)};
+$('backHost').onclick=()=>location.assign('/bbb/');$('backStudent').onclick=()=>location.assign('/bbb/');
+$('copyJoin').onclick=()=>copy(joinUrl);$('copyHost').onclick=()=>copy(location.href);
+async function teacherAction(route,notice,needConfirm){if(needConfirm&&!confirm('Барлық оқушы жауабы өшіріледі. Растайсыз ба?'))return;try{const s=await req(route,{room,key});stage=s.stage;setTeacher(s);toast(notice)}catch(e){toast(e.message)}}
+$('openAfter').onclick=()=>teacherAction('after-open','«Білдім» бағаны оқушыларға ашылды');
+$('publish').onclick=()=>teacherAction('publish','Нәтижелер жарияланды!');
+$('reopen').onclick=()=>teacherAction('reopen','Сабақ соңындағы жауаптар қайта ашылды');
+$('reset').onclick=()=>teacherAction('reset','Жаңа рефлексия басталды',true);
+$('saveBefore').onclick=async()=>{const know=$('know').value.trim(),want=$('want').value.trim();if(know.length<3||want.length<3)return toast('Екі бағанды да кемінде 3 таңбамен толтырыңыз');const b=$('saveBefore');b.disabled=true;try{await req('before',{room,voter,know,want});savedBefore=true;toast('Екі баған сәтті сақталды ✓');await refresh()}catch(e){toast(e.message)}finally{b.disabled=false}};
+$('saveAfter').onclick=async()=>{const learned=$('learned').value.trim();if(learned.length<3)return toast('«Білдім» бағанын толтырыңыз');if(!chosenProgress)return toast('Өз прогресіңді бағала');const b=$('saveAfter');b.disabled=true;try{await req('after',{room,voter,learned,progress:chosenProgress});savedAfter=true;toast('Қорытынды жауабың сақталды ✓');await refresh()}catch(e){toast(e.message)}finally{b.disabled=false}};
+if(mode==='host'){show('landing',false);show('teacher',true);$('teacherCode').textContent=room;joinUrl=location.origin+'/bbb/?room='+encodeURIComponent(room);$('joinLink').textContent=joinUrl;$('qr').src='https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&data='+encodeURIComponent(joinUrl);$('qr').onerror=()=>{$('qr').alt='QR жүктелмеді: оқушы сілтемесін көшіріңіз'};refresh();setInterval(refresh,2600)}
+if(mode==='student'){show('landing',false);show('student',true);$('studentCode').textContent=room;refresh();setInterval(refresh,2600)}
+</script>
+</body></html>
