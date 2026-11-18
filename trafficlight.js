@@ -10,7 +10,7 @@ const fail=(msg,status=400)=>Object.assign(new Error(msg),{status});
 async function read(req){return await new Promise((ok,no)=>{let s='';req.on('data',chunk=>{s+=chunk;if(s.length>4096){no(fail('Сұраныс тым үлкен',413));req.destroy();}});req.on('end',()=>{try{ok(JSON.parse(s||'{}'))}catch{no(fail('Қате деректер'))}});req.on('error',no)})}
 function get(code){const r=rooms.get(String(code||'').toUpperCase());if(!r)throw fail('Сессия табылмады. Жаңа код сұраңыз.',404);r.active=Date.now();return r}
 function auth(r,req,obj){const key=String(req.headers['x-host-key']||obj?.key||'');const a=Buffer.from(key),b=Buffer.from(r.key);if(a.length!==b.length||!crypto.timingSafeEqual(a,b))throw fail('Мұғалімге ғана рұқсат бар',403)}
-function stats(r){const counts={green:0,yellow:0,red:0},scores=Array(10).fill(0);let sum=0;for(const v of r.votes.values()){counts[v.color]++;scores[v.score-1]++;sum+=v.score}const total=r.votes.size;return {total,counts,scores,average:total?Math.round(sum/total*10)/10:0,pct:Object.fromEntries(Object.entries(counts).map(([k,v])=>[k,total?Math.round(v*1000/total)/10:0]))}}
+function stats(r){const counts={green:0,yellow:0,red:0};for(const v of r.votes.values())counts[v.color]++;const total=r.votes.size;return {total,counts,pct:Object.fromEntries(Object.entries(counts).map(([k,v])=>[k,total?Math.round(v*1000/total)/10:0]))}}
 function baseUrl(req){const proto=String(req.headers['x-forwarded-proto']||'https').split(',')[0];const host=String(req.headers['x-forwarded-host']||req.headers.host||'localhost:3000').split(',')[0];return (proto==='http'||proto==='https'?proto:'https')+'://'+host}
 function state(r,host=false){return {room:r.room,phase:r.phase,total:r.votes.size,topic:r.topic,createdAt:r.created,stats:host||r.phase==='revealed'?stats(r):null}}
 const TOPIC='Мұғалімнің кәсіби іс-әрекетіндегі оқыту технологиялары';
@@ -38,10 +38,9 @@ try{
   const b=await read(req),r=get(b.room);
   if(r.phase!=='open')throw fail('Дауыс беру жабық. Нәтижені күтіңіз.',409);
   if(!['green','yellow','red'].includes(b.color))throw fail('Түсті таңдаңыз');
-  if(!Number.isInteger(b.score)||b.score<1||b.score>10)throw fail('1–10 аралығында балл таңдаңыз');
   if(typeof b.voter!=='string'||!/^[A-Za-z0-9_-]{12,70}$/.test(b.voter))throw fail('Қатысушы идентификаторы жарамсыз');
   if(!r.votes.has(b.voter)&&r.votes.size>=MAX_VOTES)throw fail('Сессиядағы қатысушылар шегі толды',409);
-  r.votes.set(b.voter,{color:b.color,score:b.score});
+  r.votes.set(b.voter,{color:b.color});
   return reply(res,200,{ok:true,total:r.votes.size});
  }
  if(req.method==='POST'&&['/bagdarsham/api/reveal','/bagdarsham/api/reopen','/bagdarsham/api/clear'].includes(route)){
