@@ -107,7 +107,7 @@ function staticFile(req,res,u){
   fs.createReadStream(file).pipe(res);
  });
 }
-const server=http.createServer(async(req,res)=>{try{const u=new URL(req.url,'http://localhost');if(u.pathname.startsWith('/bagdarsham'))await require('./trafficlight')(req,res,u);else if(u.pathname.startsWith('/api/'))await api(req,res,u);else staticFile(req,res,u);}catch(e){if(!res.headersSent)write(res,e.status||400,{error:e.message||'Сервер қатесі'});}});
+const server=http.createServer(async(req,res)=>{try{const u=new URL(req.url,'http://localhost');if(u.pathname.startsWith('/bbb'))await require('./bbb')(req,res,u);else if(u.pathname.startsWith('/bagdarsham'))await require('./trafficlight')(req,res,u);else if(u.pathname.startsWith('/api/'))await api(req,res,u);else staticFile(req,res,u);}catch(e){if(!res.headersSent)write(res,e.status||400,{error:e.message||'Сервер қатесі'});}});
 setInterval(()=>{const now=Date.now();for(const [pin,g] of games)if(now-g.activeAt>21600000){clearTimeout(g.timer);for(const c of g.clients)try{c.res.end();}catch{}games.delete(pin);}},600000).unref();
 if(require.main===module)server.listen(PORT,'0.0.0.0',()=>console.log('QUIZ ARENA → http://localhost:'+PORT+'/host'));
 module.exports={server,reveal,newGame};
