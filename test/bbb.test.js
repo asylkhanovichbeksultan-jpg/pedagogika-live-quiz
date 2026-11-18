@@ -1,0 +1,50 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');
+const http=require('node:http');
+const handler=require('../bbb');
+test('BBB anonymous classroom: initial answers, final reflection, public results, host controls',async t=>{
+ const server=http.createServer((req,res)=>handler(req,res,new URL(req.url,'http://localhost')));
+ await new Promise(ok=>server.listen(0,'127.0.0.1',ok));t.after(()=>new Promise(ok=>server.close(ok)));
+ const root='http://127.0.0.1:'+server.address().port;
+ const request=async(path,data,headers={})=>{
+  const opts={headers:{'Content-Type':'application/json',...headers}};
+  if(data!==null){opts.method='POST';opts.body=JSON.stringify(data)}
+  const res=await fetch(root+path,opts);return {status:res.status,data:await res.json()}
+ };
+ const page=await fetch(root+'/bbb/');
+ assert.equal(page.status,200);assert.match(await page.text(),/Білгім келеді/);
+ const created=await request('/bbb/api/create',{});
+ assert.equal(created.status,200);
+ const {room,key}=created.data;
+ assert.match(room,/^\d{6}$/);assert.match(key,/^[0-9a-f]{48}$/);
+ const student='z'.repeat(30),second='y'.repeat(30);
+ const s=()=>request('/bbb/api/state?room='+room,null);
+ const h=()=>request('/bbb/api/state?room='+room,null,{'X-Host-Key':key});
+ const initial=await s();assert.equal(initial.data.stage,'before');assert.equal(initial.data.summary,null);
+ const empty=await request('/bbb/api/before',{room,voter:student,know:'a',want:'Short'});
+ assert.equal(empty.status,400);
+ const b1=await request('/bbb/api/before',{room,voter:student,know:'Технология — жүйелі оқыту тәсілі',want:'Жобалап оқытуды түсінгім келеді'});
+ assert.equal(b1.status,200);
+ const b2=await request('/bbb/api/before',{room,voter:second,know:'Технологияның мақсаты бар',want:'Өзара айырмашылықты білгім келеді'});
+ assert.equal(b2.status,200);
+ const repeat=await request('/bbb/api/before',{room,voter:student,know:'Оқыту әдісі белгілі',want:'Құрылымын түсінгім келеді'});assert.equal(repeat.data.started,2);
+ assert.equal((await s()).data.started,2);
+ const hostBefore=await h();assert.equal(hostBefore.data.summary.rows.length,2);
+ const badHost=await request('/bbb/api/after-open',{room,key:'wrong'});assert.equal(badHost.status,403);
+ const opened=await request('/bbb/api/after-open',{room,key});assert.equal(opened.data.stage,'after');
+ const disallowBefore=await request('/bbb/api/before',{room,voter:student,know:'Мәтін',want:'Мәтін'});assert.equal(disallowBefore.status,409);
+ const disallowLate=await request('/bbb/api/after',{room,voter:'x'.repeat(30),learned:'Жаңа тақырыпты түсіндім',progress:'grew'});assert.equal(disallowLate.status,409);
+ const after=await request('/bbb/api/after',{room,voter:student,learned:'Оқытудың репродуктивті және продуктивті түрлері бар',progress:'grew'});assert.equal(after.data.finished,1);
+ const notPublished=await s();assert.equal(notPublished.data.summary,null);
+ const pub=await request('/bbb/api/publish',{room,key});assert.equal(pub.data.stage,'published');
+ const publicResults=await s();assert.equal(publicResults.data.summary.finished,1);
+ assert.equal(publicResults.data.summary.progress.grew,1);
+ assert.equal(publicResults.data.summary.rows.length,2);
+ assert.equal(publicResults.data.summary.pct,50);
+ assert.deepEqual(Object.keys(publicResults.data.summary.rows[0]).sort(),['know','learned','number','progress','want']);
+ const blocked=await request('/bbb/api/after',{room,voter:second,learned:'Нәтиже туралы',progress:'some'});assert.equal(blocked.status,409);
+ const re=await request('/bbb/api/reopen',{room,key});assert.equal(re.data.stage,'after');
+ const after2=await request('/bbb/api/after',{room,voter:second,learned:'Жүйелілік және тиімділік туралы білдім',progress:'some'});assert.equal(after2.data.finished,2);
+ const pub2=await request('/bbb/api/publish',{room,key});assert.equal(pub2.data.summary.finished,2);assert.equal(pub2.data.summary.pct,100);
+ const reset=await request('/bbb/api/reset',{room,key});assert.equal(reset.data.stage,'before');assert.equal(reset.data.summary.started,0);
+});
