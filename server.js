@@ -2,7 +2,8 @@
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),os=require('node:os');
 const {questions:pedagogikaQuestions,pointsByLevel}=require('./questions');
 const {questions:minezQuestions}=require('./minez-questions');
-const banks={minez:{title:'Көркем мінез — жүректің сұлулығы',questions:minezQuestions},pedagogika:{title:'Оқытудағы диагностика және бақылау',questions:pedagogikaQuestions}};
+const {questions:adalDosQuestions}=require('./adal-dos-questions');
+const banks={adalDos:{title:'Адал дос – асыл қазына',questions:adalDosQuestions},minez:{title:'Көркем мінез — жүректің сұлулығы',questions:minezQuestions},pedagogika:{title:'Оқытудағы диагностика және бақылау',questions:pedagogikaQuestions}};
 const games=new Map(),MAX_PLAYERS=150,PORT=Number(process.env.PORT||3000);
 const id=()=>crypto.randomBytes(18).toString('hex');
 const bad=(message,status=400)=>Object.assign(new Error(message),{status});
