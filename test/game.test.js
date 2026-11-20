@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const {server}=require('../server');
 const {questions:pedagogikaQuestions}=require('../questions');
 const {questions}=require('../minez-questions');
+const {questions:adalDosQuestions}=require('../adal-dos-questions');
 let base;
 async function api(url,body){const res=await fetch(base+url,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});return {status:res.status,body:await res.json()};}
 function state(pin,role,token){return api('/api/state?pin='+pin+'&role='+role+'&token='+token);}
@@ -12,6 +13,10 @@ test.after(async()=>{await new Promise(resolve=>server.close(resolve));});
 test('Сұрақ саны 15: 10 оңай, 3 орташа, 2 қиын',()=>{
  assert.equal(questions.length,15);
  assert.equal(pedagogikaQuestions.length,15);
+ assert.equal(adalDosQuestions.length,15);
+ assert.match(adalDosQuestions[0].question,/Достық/);
+ assert.deepEqual(adalDosQuestions.reduce((o,q)=>(o[q.level]=(o[q.level]||0)+1,o),{}),{easy:10,medium:3,hard:2});
+ for(const q of adalDosQuestions){assert.equal(q.options.length,4);assert.ok(q.correct>=0&&q.correct<4);assert.ok(q.source);}
  assert.match(questions[0].question,/Көркем мінез/);
  assert.deepEqual(questions.reduce((o,q)=>(o[q.level]=(o[q.level]||0)+1,o),{}),{easy:10,medium:3,hard:2});
  for(const q of questions){assert.equal(q.options.length,4);assert.ok(q.correct>=0&&q.correct<4);assert.ok(q.source);}
@@ -56,4 +61,11 @@ test('Ескі педагогика ойыны да бөлек режимде ж
  assert.equal(room.status,200);assert.equal(room.body.topic,'pedagogika');
  const st=await state(room.body.pin,'host',room.body.token);
  assert.match(st.body.title,/диагностика/);assert.equal(st.body.total,15);
+});
+
+test('Адал дос ойыны 15 сұрақпен жеке тақырып ретінде ашылады',async()=>{
+ const room=await api('/api/create',{topic:'adalDos'});
+ assert.equal(room.status,200);assert.equal(room.body.topic,'adalDos');
+ const st=await state(room.body.pin,'host',room.body.token);
+ assert.match(st.body.title,/Адал дос/);assert.equal(st.body.total,15);
 });
