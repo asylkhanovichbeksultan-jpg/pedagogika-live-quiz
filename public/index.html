@@ -18,7 +18,7 @@ main{min-height:76vh;padding:36px 0 60px}h1,h2,h3,p{margin-top:0}h1{font:700 cla
 @media(max-width:760px){.hero,.lobbygrid,.grid2{grid-template-columns:1fr}.hero{min-height:0}.hero h1{font-size:43px}.tiles{grid-template-columns:repeat(3,1fr)}.panel{padding:20px}.answers{grid-template-columns:1fr;gap:10px}.answer{min-height:74px}.qtitle{margin:14px auto 25px}.pin{font-size:56px;letter-spacing:4px}.foot{flex-wrap:wrap}.podium{gap:7px}.pod{padding:15px 5px}.pod b{font-size:13px}.pod em{font-size:31px}.tag{font-size:10px}main{padding-top:25px}}
 </style></head><body>
 <div class="wrap"><nav><a class="logo" href="/host">✦ QUIZ<b>ARENA</b></a><span class="pill"><span class="dot"></span><span id="topic-label">КӨРКЕМ МІНЕЗ · LIVE</span></span></nav>
-<main id="app"></main><footer class="foot"><span id="footer-topic">КӨРКЕМ МІНЕЗ · 5-СЫНЫП</span><span>7 / 15 СҰРАҚ · LIVE · 1 ЖЕҢІМПАЗ</span></footer></div>
+<main id="app"></main><footer class="foot"><span id="footer-topic">КӨРКЕМ МІНЕЗ · 5-СЫНЫП</span><span id="footer-meta">15 СҰРАҚ · LIVE · 1 ЖЕҢІМПАЗ</span></footer></div>
 <div id="toast" class="toast"></div>
 <script>
 'use strict';
@@ -39,6 +39,7 @@ function updateLabels(){
  const topic=view?.topic||currentTopic;
  document.getElementById('topic-label').textContent=(topic==='minez'?'КӨРКЕМ МІНЕЗ':topic==='adalDos'?'АДАЛ ДОС':topic==='foreignTheory'?'ШЕТ ЕЛДІК ТЕОРИЯЛАР':'ПЕДАГОГИКА')+' · LIVE';
  document.getElementById('footer-topic').textContent=topic==='minez'?'КӨРКЕМ МІНЕЗ · 5-СЫНЫП':topic==='adalDos'?'АДАЛ ДОС · 5-СЫНЫП':topic==='foreignTheory'?'ОҚЫТУ ТЕОРИЯЛАРЫ · 7 СҰРАҚ':'YESSENOV · PEDAGOGY QUIZ';
+ document.getElementById('footer-meta').textContent=(topic==='foreignTheory'?'7':'15')+' СҰРАҚ · LIVE · 1 ЖЕҢІМПАЗ';
 }
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tag=(s,extra='')=>'<span class="step"><span>'+esc(s)+'</span>'+extra+'</span>';
