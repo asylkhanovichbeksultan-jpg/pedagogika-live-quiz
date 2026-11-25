@@ -3,6 +3,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
 const {questions:pedagogikaQuestions,pointsByLevel}=require('./questions');
 const {questions:minezQuestions}=require('./minez-questions');
 const {questions:adalDosQuestions}=require('./adal-dos-questions');
+const theoryHandler=require('./theory-yesno');
 const banks={adalDos:{title:'Адал дос – асыл қазына',questions:adalDosQuestions},minez:{title:'Көркем мінез — жүректің сұлулығы',questions:minezQuestions},pedagogika:{title:'Оқытудағы диагностика және бақылау',questions:pedagogikaQuestions}};
 const games=new Map(),MAX_PLAYERS=150,PORT=Number(process.env.PORT||3000);
 const id=()=>crypto.randomBytes(18).toString('hex');
@@ -108,7 +109,7 @@ function staticFile(req,res,u){
   fs.createReadStream(file).pipe(res);
  });
 }
-const server=http.createServer(async(req,res)=>{try{const u=new URL(req.url,'http://localhost');if(u.pathname.startsWith('/bbb'))await require('./bbb')(req,res,u);else if(u.pathname.startsWith('/bagdarsham'))await require('./trafficlight')(req,res,u);else if(u.pathname.startsWith('/api/'))await api(req,res,u);else staticFile(req,res,u);}catch(e){if(!res.headersSent)write(res,e.status||400,{error:e.message||'Сервер қатесі'});}});
+const server=http.createServer(async(req,res)=>{try{const u=new URL(req.url,'http://localhost');if(u.pathname.startsWith('/theory-api/'))await theoryHandler(req,res,u);else if(u.pathname==='/theory'||u.pathname==='/theory/host'){req.url='/theory.html';staticFile(req,res,new URL(req.url,'http://localhost'));}else if(u.pathname.startsWith('/bbb'))await require('./bbb')(req,res,u);else if(u.pathname.startsWith('/bagdarsham'))await require('./trafficlight')(req,res,u);else if(u.pathname.startsWith('/api/'))await api(req,res,u);else staticFile(req,res,u);}catch(e){if(!res.headersSent)write(res,e.status||400,{error:e.message||'Сервер қатесі'});}});
 setInterval(()=>{const now=Date.now();for(const [pin,g] of games)if(now-g.activeAt>21600000){clearTimeout(g.timer);for(const c of g.clients)try{c.res.end();}catch{}games.delete(pin);}},600000).unref();
 if(require.main===module)server.listen(PORT,'0.0.0.0',()=>console.log('QUIZ ARENA → http://localhost:'+PORT+'/host'));
 module.exports={server,reveal,newGame};
