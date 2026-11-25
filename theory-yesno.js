@@ -1,0 +1,25 @@
+'use strict';
+const http=require('node:http'),crypto=require('node:crypto');
+const questions=require('./theory-questions');
+const rooms=new Map();
+const makeId=()=>crypto.randomBytes(18).toString('hex');
+const send=(res,status,obj)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(obj));};
+const fail=(msg,status=400)=>Object.assign(new Error(msg),{status});
+async function read(req){let s='';for await(const c of req){s+=c;if(s.length>12000)throw fail('Сұраныс тым үлкен',413);}try{return JSON.parse(s||'{}')}catch{throw fail('JSON қатесі')}}
+function room(pin){const r=rooms.get(String(pin||''));if(!r)throw fail('PIN табылмады',404);r.activeAt=Date.now();return r;}
+function player(r,token){return [...r.players.values()].find(p=>p.token===token)}
+function ranking(r){return [...r.players.values()].map(p=>({name:p.name,score:p.score,correct:p.correct,done:p.index===questions.length})).sort((a,b)=>b.score-a.score||b.correct-a.correct||a.name.localeCompare(b.name,'kk')).map((p,i)=>({...p,rank:i+1}));}
+function state(r,role,p){return {pin:r.pin,title:'Оқытудың шет елдік тұжырымдамалары',phase:r.phase,total:questions.length,participantCount:r.players.size,players:role==='host'?[...r.players.values()].map(x=>({name:x.name,score:x.score,progress:x.index,done:x.index===questions.length})):undefined,ranking:ranking(r),personal:p?{name:p.name,index:p.index,score:p.score,correct:p.correct,done:p.index===questions.length,question:p.index<questions.length?{number:p.index+1,text:questions[p.index].q}:null}:undefined};}
+function base(req){const proto=String(req.headers['x-forwarded-proto']||'https').split(',')[0],host=String(req.headers['x-forwarded-host']||req.headers.host||'').split(',')[0];return proto+'://'+host;}
+module.exports=async function(req,res,u){
+ try{
+ const path=u.pathname;
+ if(req.method==='POST'&&path==='/theory-api/create'){const pin=String(crypto.randomInt(100000,1000000));const r={pin,host:makeId(),phase:'lobby',players:new Map(),activeAt:Date.now()};rooms.set(pin,r);return send(res,200,{pin,token:r.host,joinUrl:base(req)+'/theory?pin='+pin});}
+ if(req.method==='POST'&&path==='/theory-api/join'){const b=await read(req),r=room(b.pin),name=String(b.name||'').trim().replace(/\s+/g,' ');if(r.phase!=='lobby')throw fail('Ойын басталып кетті',409);if(name.length<2||name.length>24)throw fail('Атыңыз 2–24 таңба болсын');if([...r.players.values()].some(p=>p.name.toLocaleLowerCase()===name.toLocaleLowerCase()))throw fail('Бұл ат бұрын алынған',409);if(r.players.size>=150)throw fail('Қатысушы саны шегіне жетті',409);const p={id:makeId(),token:makeId(),name,index:0,score:0,correct:0};r.players.set(p.id,p);return send(res,200,{pin:r.pin,token:p.token,name});}
+ if(req.method==='POST'&&path==='/theory-api/start'){const b=await read(req),r=room(b.pin);if(b.token!==r.host)throw fail('Рұқсат жоқ',403);if(r.phase!=='lobby')throw fail('Ойын басталып кеткен',409);if(!r.players.size)throw fail('Алдымен кемінде бір қатысушы кірсін',409);r.phase='active';return send(res,200,{ok:true});}
+ if(req.method==='POST'&&path==='/theory-api/answer'){const b=await read(req),r=room(b.pin),p=player(r,b.token);if(!p)throw fail('Қатысушы табылмады',403);if(r.phase!=='active')throw fail('Ойын әлі басталған жоқ',409);if(p.index>=questions.length)throw fail('Сұрақтар аяқталды',409);if(typeof b.answer!=='boolean')throw fail('Иә немесе Жоқ таңдаңыз');const q=questions[p.index],correct=b.answer===q.a;if(correct){p.score++;p.correct++;}p.index++;return send(res,200,{ok:true,correct,explanation:q.why,source:q.src,score:p.score,next:p.index<questions.length});}
+ if(req.method==='POST'&&path==='/theory-api/finish'){const b=await read(req),r=room(b.pin);if(b.token!==r.host)throw fail('Рұқсат жоқ',403);r.phase='finished';return send(res,200,{ok:true});}
+ if(req.method==='GET'&&path==='/theory-api/state'){const r=room(u.searchParams.get('pin')),role=u.searchParams.get('role'),token=u.searchParams.get('token');if(role==='host'){if(token!==r.host)throw fail('Рұқсат жоқ',403);return send(res,200,state(r,'host'));}const p=player(r,token);if(!p)throw fail('Рұқсат жоқ',403);return send(res,200,state(r,'player',p));}
+ throw fail('API табылмады',404);
+ }catch(e){if(!res.headersSent)send(res,e.status||400,{error:e.message||'Сервер қатесі'});}
+};
