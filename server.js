@@ -17,7 +17,7 @@ function auth(g,role,token){if(role==='host'&&token===g.hostToken)return {role,p
 const rank=g=>[...g.players.values()].sort((a,b)=>b.score-a.score||b.correctCount-a.correctCount||a.joinedAt-b.joinedAt).map((p,i)=>({id:p.id,name:p.name,score:p.score,correctCount:p.correctCount,rank:i+1}));
 function state(g,a){
  const q=g.questions[g.index],leaders=rank(g),p=a.player,ans=p&&g.answers.get(p.id);
- return {pin:g.pin,topic:g.topic,title:g.title,phase:g.phase,questionIndex:g.index,total:g.questions.length,counts:{easy:10,medium:3,hard:2},
+ return {pin:g.pin,topic:g.topic,title:g.title,phase:g.phase,questionIndex:g.index,total:g.questions.length,counts:g.questions.reduce((o,x)=>(o[x.level]=(o[x.level]||0)+1,o),{}),
  question:['question','reveal'].includes(g.phase)?{text:q.question,options:q.options,level:q.level,duration:q.time,endsAt:g.endsAt,number:g.index+1}:null,
  stats:g.phase==='reveal'?{counts:q.options.map((_,i)=>[...g.answers.values()].filter(x=>x.choice===i).length),correct:q.correct,source:q.source}:null,
  players:a.role==='host'?[...g.players.values()].map(x=>({id:x.id,name:x.name})):undefined,
