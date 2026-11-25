@@ -5,6 +5,7 @@ const {server}=require('../server');
 const {questions:pedagogikaQuestions}=require('../questions');
 const {questions}=require('../minez-questions');
 const {questions:adalDosQuestions}=require('../adal-dos-questions');
+const {questions:foreignTheoryQuestions}=require('../foreign-theory-questions');
 let base;
 async function api(url,body){const res=await fetch(base+url,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});return {status:res.status,body:await res.json()};}
 function state(pin,role,token){return api('/api/state?pin='+pin+'&role='+role+'&token='+token);}
@@ -14,6 +15,9 @@ test('Сұрақ саны 15: 10 оңай, 3 орташа, 2 қиын',()=>{
  assert.equal(questions.length,15);
  assert.equal(pedagogikaQuestions.length,15);
  assert.equal(adalDosQuestions.length,15);
+ assert.equal(foreignTheoryQuestions.length,7);
+ assert.deepEqual(foreignTheoryQuestions.reduce((o,q)=>(o[q.level]=(o[q.level]||0)+1,o),{}),{easy:4,medium:2,hard:1});
+ for(const q of foreignTheoryQuestions){assert.equal(q.options.length,4);assert.ok(q.correct>=0&&q.correct<4);assert.ok(q.source);}
  assert.match(adalDosQuestions[0].question,/Достық/);
  assert.deepEqual(adalDosQuestions.reduce((o,q)=>(o[q.level]=(o[q.level]||0)+1,o),{}),{easy:10,medium:3,hard:2});
  for(const q of adalDosQuestions){assert.equal(q.options.length,4);assert.ok(q.correct>=0&&q.correct<4);assert.ok(q.source);}
@@ -68,4 +72,22 @@ test('Адал дос ойыны 15 сұрақпен жеке тақырып р�
  assert.equal(room.status,200);assert.equal(room.body.topic,'adalDos');
  const st=await state(room.body.pin,'host',room.body.token);
  assert.match(st.body.title,/Адал дос/);assert.equal(st.body.total,15);
+});
+
+test('Шет елдік оқыту теориялары quiz: 7 сұрақ және 4/2/1 деңгейі',async()=>{
+ const room=await api('/api/create',{topic:'foreignTheory'});
+ assert.equal(room.status,200);assert.equal(room.body.topic,'foreignTheory');
+ const st=await state(room.body.pin,'host',room.body.token);
+ assert.match(st.body.title,/шет елдік тұжырымдамалары/);assert.equal(st.body.total,7);
+ const player=(await api('/api/join',{pin:room.body.pin,name:'Тест қатысушы'})).body;
+ assert.equal((await api('/api/start',{pin:room.body.pin,token:room.body.token})).status,200);
+ for(let i=0;i<7;i++){
+  const current=(await state(room.body.pin,'player',player.token)).body;
+  assert.equal(current.question.number,i+1);
+  assert.equal(current.question.level,foreignTheoryQuestions[i].level);
+  assert.equal((await api('/api/answer',{pin:room.body.pin,token:player.token,choice:foreignTheoryQuestions[i].correct})).status,200);
+  if(i<6)assert.equal((await api('/api/next',{pin:room.body.pin,token:room.body.token})).status,200);
+  else assert.equal((await api('/api/next',{pin:room.body.pin,token:room.body.token})).status,200);
+ }
+ assert.equal((await state(room.body.pin,'host',room.body.token)).body.phase,'finished');
 });
