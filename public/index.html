@@ -129,7 +129,7 @@ async function answer(choice){await command('answer',{choice});}
 function leaderboard(){return (view.leaders||[]).map((p,i)=>'<div class="leader"><span class="rank">#'+p.rank+'</span><strong>'+esc(p.name)+'</strong><b>'+score(p.score)+' P</b></div>').join('')||'<p>Әзірге ұпай жоқ</p>';}
 function question(){
  const q=view.question,t=timerMarkup(q);
- app.innerHTML='<section class="stage"><div class="qhead"><div class="step"><span>СҰРАҚ '+q.number+' / '+view.total+'</span><span>'+levelText(q.level)+'</span></div>'+t.html+'</div>'+t.bar+'<h2 class="qtitle">'+esc(q.text)+'</h2>'+answers(q,false)+'<p class="subhead">'+(role==='host'?'Жауап бергендер: '+view.answeredCount+' / '+view.participantCount:(view.personal?.answer===null?'Жауабыңды тез таңда! ⚡':'✅ Жауабың қабылданды. Нәтижені күт.'))+'</p></section>';
+ app.innerHTML='<section class="stage"><div class="qhead"><div class="step"><span>СҰРАҚ '+q.number+' / '+view.total+'</span><span>'+levelText(q.level)+'</span></div>'+t.html+'</div>'+t.bar+'<h2 class="qtitle">'+esc(q.text)+'</h2>'+answers(q,false)+'<p class="subhead">'+(role==='host'?'Жауап бергендер: '+view.answeredCount+' / '+view.participantCount:(view.personal?.answer===null?'Жауабыңды тез таңда! ⚡':'✅ Жауабың қабылданды. Нәтижені күт.'))+'</p>'+(role==='host'?'<div class="panel" style="margin-top:22px"><div class="tag">⚡ LIVE РЕЙТИНГ · ҚАЗІРГІ ОРЫНДАР</div><div class="leaders">'+leaderboard()+'</div></div>':'')+'</section>';
  tick();
 }
 function reveal(){
